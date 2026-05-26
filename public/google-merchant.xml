@@ -1,0 +1,104 @@
+<?xml version="1.0"?>
+<rss xmlns:g="http://base.google.com/ns/1.0" version="2.0">
+  <channel>
+    <title>LANForge Products</title>
+    <link>https://lanforge.co</link>
+    <description>LANForge Custom PCs and Accessories</description>
+    <item>
+      <g:id>69bd7348500944cc71f0f3a2</g:id>
+      <g:title>LANForge Silver</g:title>
+      <g:description>No description provided.</g:description>
+      <g:link>https://lanforge.co/products/lanforge-silver</g:link>
+      <g:image_link>https://cdn.lanforge.co/PCs/series/1774306730687-220628478.png</g:image_link>
+      <g:condition>new</g:condition>
+      <g:availability>out_of_stock</g:availability>
+      <g:price>2849.99 USD</g:price>
+      <g:brand>LANForge</g:brand>
+      <g:mpn>24812931293</g:mpn>
+    </item>
+    <item>
+      <g:id>69bd7379500944cc71f0f3aa</g:id>
+      <g:title>LANForge Gold</g:title>
+      <g:description>No description provided.</g:description>
+      <g:link>https://lanforge.co/products/lanforge-gold</g:link>
+      <g:image_link>https://cdn.lanforge.co/PCs/series/1774307365334-345928578.png</g:image_link>
+      <g:condition>new</g:condition>
+      <g:availability>out_of_stock</g:availability>
+      <g:price>3999.99 USD</g:price>
+      <g:brand>LANForge</g:brand>
+      <g:mpn>128418231923</g:mpn>
+    </item>
+    <item>
+      <g:id>69bd967d2fae674a0adb0104</g:id>
+      <g:title>LANForge Mini Platinum</g:title>
+      <g:description>No description provided.</g:description>
+      <g:link>https://lanforge.co/products/lanforge-mini-platinum</g:link>
+      <g:image_link>https://cdn.lanforge.co/PCs/mini-series/1774400860280-903717867.png</g:image_link>
+      <g:condition>new</g:condition>
+      <g:availability>out_of_stock</g:availability>
+      <g:price>4049.99 USD</g:price>
+      <g:brand>LANForge</g:brand>
+      <g:mpn>12841239</g:mpn>
+    </item>
+    <item>
+      <g:id>69bd99eefd61b02a7fc25048</g:id>
+      <g:title>LANForge Mini Gold</g:title>
+      <g:description>No description provided.</g:description>
+      <g:link>https://lanforge.co/products/lanforge-mini-gold</g:link>
+      <g:image_link>https://cdn.lanforge.co/PCs/mini-series/1774306391033-542225346.png</g:image_link>
+      <g:condition>new</g:condition>
+      <g:availability>out_of_stock</g:availability>
+      <g:price>2799.99 USD</g:price>
+      <g:brand>LANForge</g:brand>
+      <g:mpn>87219312</g:mpn>
+    </item>
+    <item>
+      <g:id>69bd9a16fd61b02a7fc25050</g:id>
+      <g:title>LANForge Mini Silver</g:title>
+      <g:description>No description provided.</g:description>
+      <g:link>https://lanforge.co/products/lanforge-mini-silver</g:link>
+      <g:image_link>https://cdn.lanforge.co/PCs/mini-series/1774400850801-790520164.png</g:image_link>
+      <g:condition>new</g:condition>
+      <g:availability>out_of_stock</g:availability>
+      <g:price>2399.99 USD</g:price>
+      <g:brand>LANForge</g:brand>
+      <g:mpn>4812738123</g:mpn>
+    </item>
+    <item>
+      <g:id>69d5ba6d6b2a6fcc7d1fb188</g:id>
+      <g:title>LANForge 7800X3D // 5060 Ti</g:title>
+      <g:description>No description provided.</g:description>
+      <g:link>https://lanforge.co/products/lanforge-7800x3d-5060-ti</g:link>
+      <g:image_link>https://cdn.lanforge.co/misc/121679ed-6a9f-4df8-87bb-a025b9d5734e.png</g:image_link>
+      <g:condition>new</g:condition>
+      <g:availability>out_of_stock</g:availability>
+      <g:price>2549.99 USD</g:price>
+      <g:brand>LANForge</g:brand>
+      <g:mpn>12918231932</g:mpn>
+    </item>
+    <item>
+      <g:id>69d5bac56b2a6fcc7d1fb1ee</g:id>
+      <g:title>LANForge 9850X3D // 5080</g:title>
+      <g:description>No description provided.</g:description>
+      <g:link>https://lanforge.co/products/lanforge-9850x3d-5080</g:link>
+      <g:image_link>https://cdn.lanforge.co/misc/c8f43581-b01e-4157-8a24-66036cdadbb7.png</g:image_link>
+      <g:condition>new</g:condition>
+      <g:availability>out_of_stock</g:availability>
+      <g:price>4099.99 USD</g:price>
+      <g:brand>LANForge</g:brand>
+      <g:mpn>129128319313</g:mpn>
+    </item>
+    <item>
+      <g:id>69d6b14606e3d9aaf79ba704</g:id>
+      <g:title>LANForge 7800X3D // 5070</g:title>
+      <g:description>No description provided.</g:description>
+      <g:link>https://lanforge.co/products/lanforge-7800x3d-5070</g:link>
+      <g:image_link>https://cdn.lanforge.co/misc/90bb35ee-64d5-4e68-a26c-4cbe9c3716fe.png</g:image_link>
+      <g:condition>new</g:condition>
+      <g:availability>out_of_stock</g:availability>
+      <g:price>2599.99 USD</g:price>
+      <g:brand>LANForge</g:brand>
+      <g:mpn>12481283</g:mpn>
+    </item>
+  </channel>
+</rss>

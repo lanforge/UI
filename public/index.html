@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18119314716"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'AW-18119314716');
+    </script>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0a0a0f" />
+    <meta
+      name="description"
+      content="LANForge - Premium custom gaming PC builder. Design your ultimate gaming rig with cutting‑edge components."
+    />
+    <meta property="og:title" content="LANForge | Custom Gaming PC Builder" />
+    <meta property="og:description" content="Build your dream gaming PC with our interactive configurator. High‑performance custom builds for gamers and creators." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="%PUBLIC_URL%/logo512.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@LANForge" />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <title>LANForge | Custom Gaming PC Builder</title>
+    <script>
+      _affirm_config = {
+        public_api_key:  "%REACT_APP_AFFIRM_PUBLIC_KEY%",
+        script:          "%REACT_APP_AFFIRM_SCRIPT_URL%"
+      };
+      (function(m,g,n,d,a,e,h,c){var b=m[n]||{},k=document.createElement(e),p=document.getElementsByTagName(e)[0],l=function(a,b,c){return function(){a[b]._.push([c,arguments])}};b[d]=l(b,d,"set");var f=b[d];b[a]={};b[a]._=[];f._=[];b._=[];b[a][h]=l(b,a,h);b[c]=function(){b._.push([h,arguments])};a=0;for(c="set add save post open empty reset on off trigger ready setProduct".split(" ");a<c.length;a++)f[c[a]]=l(b,d,c[a]);a=0;for(c=["get","token","url","items"];a<c.length;a++)f[c[a]]=function(){};k.async=!0;k.src=g[e];p.parentNode.insertBefore(k,p);delete g[e];f(g);m[n]=b})(window,_affirm_config,"affirm","checkout","ui","script","ready","jsReady");
+    </script>
+    <!-- Fonts -->
+    <link rel="stylesheet" href="https://use.typekit.net/ssf3mqm.css">
+    <style>
+      /* Fallback font while loading */
+      body {
+        font-family: "lato", sans-serif;
+        font-weight: 900;
+        font-style: normal;
+      }
+    </style>
+  </head>
+  <body>
+    <noscript>
+      <div style="background: #0a0a0f; color: #fff; padding: 2rem; text-align: center;">
+        <h1>LANForge Gaming PC Builder</h1>
+        <p>This application requires JavaScript to function. Please enable JavaScript to continue.</p>
+      </div>
+    </noscript>
+    <div id="root"></div>
+  </body>
+</html>
