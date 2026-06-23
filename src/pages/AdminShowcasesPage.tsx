@@ -73,7 +73,7 @@ const AdminShowcasesPage: React.FC = () => {
           <button onClick={() => setErrorMsg(null)} className="float-right text-slate-400 hover:text-white">x</button>
         </div>
       )}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6">
         <h1 className="text-xl font-medium text-white">Creator Showcases</h1>
         <button
           onClick={handleCreate}
@@ -84,7 +84,7 @@ const AdminShowcasesPage: React.FC = () => {
       </div>
 
       <div className="admin-card overflow-hidden">
-        <table className="w-full text-left text-sm text-slate-300">
+        <table className="w-full min-w-[720px] text-left text-sm text-slate-300">
           <thead className="bg-[#11141d] border-b border-[#1f2233]">
             <tr>
               <th className="py-4 px-6 text-xs font-semibold text-slate-400 uppercase tracking-wider text-left">Name</th>

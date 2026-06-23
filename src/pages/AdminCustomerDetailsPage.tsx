@@ -159,7 +159,7 @@ const AdminCustomerDetailsPage: React.FC = () => {
   return (
     <div className="space-y-6 pb-20 max-w-7xl">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center space-x-4">
           <button
             onClick={() => navigate('/admin/customers')}
@@ -460,7 +460,7 @@ const AdminCustomerDetailsPage: React.FC = () => {
               <h2 className="text-lg font-medium text-white">Recent Orders</h2>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full min-w-[720px]">
                 <thead>
                   <tr className="bg-[#0a0c13]">
                     <th className="py-4 px-6 text-xs font-semibold text-slate-400 uppercase tracking-wider text-left">Order</th>
@@ -513,7 +513,7 @@ const AdminCustomerDetailsPage: React.FC = () => {
               <h2 className="text-lg font-medium text-white">Payment History</h2>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full min-w-[720px]">
                 <thead>
                   <tr className="bg-[#0a0c13]">
                     <th className="py-4 px-6 text-xs font-semibold text-slate-400 uppercase tracking-wider text-left">Transaction ID</th>

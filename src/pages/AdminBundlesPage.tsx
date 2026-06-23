@@ -67,7 +67,7 @@ const AdminBundlesPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-xl font-medium text-white">Part Bundles</h1>
           <p className="text-slate-500 text-sm mt-1">Group parts for combo pricing in the configurator</p>

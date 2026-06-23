@@ -135,7 +135,7 @@ const AdminApiLogsPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-xl font-medium text-white">API Logs</h1>
           <p className="text-sm text-slate-400 mt-1">
@@ -323,7 +323,7 @@ const AdminApiLogsPage: React.FC = () => {
       {/* Logs Table */}
       <div className="bg-[#0a0c13] border border-[#1f2233] rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full min-w-[720px] text-sm">
             <thead>
               <tr className="border-b border-[#1f2233]">
                 <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Time</th>

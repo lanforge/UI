@@ -46,7 +46,7 @@ const Header: React.FC = () => {
             )}
             
             {/* Products Dropdown */}
-            {(isEnabled('/pcs') || isEnabled('/configurator') || isEnabled('/accessories')) && (
+            {(isEnabled('/pcs') || isEnabled('/configurator') || isEnabled('/accessories') || isEnabled('/merch')) && (
             <div 
               className="relative"
               onMouseEnter={() => setProductsDropdownOpen(true)}
@@ -95,6 +95,14 @@ const Header: React.FC = () => {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
                     </svg>
                     Accessories
+                  </Link>
+                )}
+                {isEnabled('/merch') && (
+                  <Link to="/merch" className="dropdown-item">
+                    <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                    </svg>
+                    Merch
                   </Link>
                 )}
               </div>
@@ -302,7 +310,7 @@ const Header: React.FC = () => {
                     </Link>
                   )}
                   
-                  {(isEnabled('/pcs') || isEnabled('/configurator') || isEnabled('/accessories')) && (
+                  {(isEnabled('/pcs') || isEnabled('/configurator') || isEnabled('/accessories') || isEnabled('/merch')) && (
                   <div className="space-y-2">
                     <button 
                       className="w-full flex items-center justify-between py-2 text-text-secondary font-medium hover:text-accent-neon transition-colors duration-300"
@@ -334,12 +342,21 @@ const Header: React.FC = () => {
                           </Link>
                         )}
                         {isEnabled('/accessories') && (
-                          <Link 
-                            to="/accessories" 
+                          <Link
+                            to="/accessories"
                             className="block py-2 text-text-secondary hover:text-accent-neon transition-colors duration-300"
                             onClick={() => setMobileMenuOpen(false)}
                           >
                             Accessories
+                          </Link>
+                        )}
+                        {isEnabled('/merch') && (
+                          <Link
+                            to="/merch"
+                            className="block py-2 text-text-secondary hover:text-accent-neon transition-colors duration-300"
+                            onClick={() => setMobileMenuOpen(false)}
+                          >
+                            Merch
                           </Link>
                         )}
                       </div>

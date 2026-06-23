@@ -5,9 +5,16 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faStar, faHeart, faShieldHalved } from '@fortawesome/free-solid-svg-icons';
 import ReviewModal from './ReviewModal';
 
+const REVIEW_TRUNCATE_LENGTH = 180;
+
 const Reviews: React.FC = () => {
   const [reviews, setReviews] = useState<any[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+
+  const toggleExpanded = (id: string) => {
+    setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
 
   React.useEffect(() => {
     fetch(`${process.env.REACT_APP_API_URL}/reviews?limit=3`)
@@ -94,7 +101,28 @@ const Reviews: React.FC = () => {
                 </div>
                 
                 {/* Review comment */}
-                <p className="text-gray-300 italic mb-6">"{review.comment}"</p>
+                {(() => {
+                  const comment = review.comment || '';
+                  const isLong = comment.length > REVIEW_TRUNCATE_LENGTH;
+                  const isExpanded = !!expanded[review.id];
+                  const displayText = !isLong || isExpanded
+                    ? comment
+                    : `${comment.slice(0, REVIEW_TRUNCATE_LENGTH).trimEnd()}…`;
+                  return (
+                    <p className="text-gray-300 italic mb-6">
+                      "{displayText}"
+                      {isLong && (
+                        <button
+                          type="button"
+                          onClick={() => toggleExpanded(review.id)}
+                          className="not-italic ml-2 text-cyan-400 hover:text-cyan-300 font-medium text-sm transition-colors"
+                        >
+                          {isExpanded ? 'Show less' : 'Read more'}
+                        </button>
+                      )}
+                    </p>
+                  );
+                })()}
                 
                 {/* Verified badge */}
                 <div className="flex items-center gap-2 text-sm text-gray-500">

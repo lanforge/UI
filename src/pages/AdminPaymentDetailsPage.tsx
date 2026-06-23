@@ -133,7 +133,7 @@ const AdminPaymentDetailsPage: React.FC = () => {
   return (
     <div className="space-y-6 pb-20">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center space-x-4">
           <button 
             onClick={() => navigate(-1)}
@@ -261,7 +261,7 @@ const AdminPaymentDetailsPage: React.FC = () => {
           <div className="admin-card p-6 lg:col-span-2">
             <h2 className="text-lg font-medium text-white border-b border-[#1f2233] pb-2 mb-4">Refund History</h2>
             <div className="overflow-x-auto">
-              <table className="w-full text-left">
+              <table className="w-full min-w-[720px] text-left">
                 <thead>
                   <tr className="text-slate-400 border-b border-[#1f2233]">
                     <th className="py-4 px-6 text-xs font-semibold text-slate-400 uppercase tracking-wider text-left">Date</th>

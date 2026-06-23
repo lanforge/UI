@@ -219,7 +219,7 @@ const AdminShowcaseDetailsPage: React.FC = () => {
           <button onClick={() => setSuccessMsg(null)} className="float-right text-slate-400 hover:text-white">x</button>
         </div>
       )}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6">
         <div>
           <button 
             onClick={() => navigate('/admin/showcases')}

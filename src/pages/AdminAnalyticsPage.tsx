@@ -37,7 +37,7 @@ const AdminAnalyticsPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-xl font-medium text-white">Analytics Dashboard</h1>
         <button 
           onClick={() => window.location.reload()}

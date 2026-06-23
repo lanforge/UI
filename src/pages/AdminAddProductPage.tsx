@@ -256,7 +256,7 @@ const AdminAddProductPage: React.FC = () => {
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto pb-12">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <button 
             onClick={() => navigate('/admin/products')}

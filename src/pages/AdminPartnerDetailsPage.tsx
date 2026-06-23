@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import api from '../utils/api';
+import CDNImagePicker from '../components/CDNImagePicker';
 
 interface Partner {
   _id: string;
@@ -57,6 +58,30 @@ const AdminPartnerDetailsPage: React.FC = () => {
 
   // Form state
   const [formData, setFormData] = useState<Partial<Partner>>({});
+  const [showCdnPicker, setShowCdnPicker] = useState(false);
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const logoInputRef = useRef<HTMLInputElement>(null);
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploadingLogo(true);
+    try {
+      const data = new FormData();
+      data.append('image', file);
+      data.append('folder', 'partners');
+      const res = await api.post('/uploads/image', data, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      setFormData(prev => ({ ...prev, logo: res.data.url }));
+    } catch (err) {
+      console.error('Logo upload failed', err);
+      alert('Failed to upload logo.');
+    } finally {
+      setIsUploadingLogo(false);
+      if (logoInputRef.current) logoInputRef.current.value = '';
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -133,7 +158,7 @@ const AdminPartnerDetailsPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center space-x-4">
           <Link to="/admin/partners" className="p-2 text-slate-400 hover:text-white hover:bg-[#11141d] rounded-lg transition-colors">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -230,15 +255,52 @@ const AdminPartnerDetailsPage: React.FC = () => {
                   className="admin-input w-full bg-[#0a0c13]"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-400 mb-1">Logo URL</label>
-                <input
-                  type="text"
-                  name="logo"
-                  value={formData.logo || ''}
-                  onChange={handleChange}
-                  className="admin-input w-full bg-[#0a0c13]"
-                />
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-slate-400 mb-1">Logo / Profile Image</label>
+                <div className="flex items-center gap-4">
+                  <div className="w-20 h-20 shrink-0 rounded-lg overflow-hidden border-2 border-[#1f2233] bg-[#11141d] flex items-center justify-center">
+                    {formData.logo ? (
+                      <img src={formData.logo} alt="Logo preview" className="w-full h-full object-contain" />
+                    ) : (
+                      <svg className="w-7 h-7 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    )}
+                  </div>
+                  <div className="flex-1 flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => logoInputRef.current?.click()}
+                      disabled={isUploadingLogo}
+                      className="px-3 py-2 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 rounded-lg text-sm transition-colors disabled:opacity-50"
+                    >
+                      {isUploadingLogo ? 'Uploading…' : 'Upload'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowCdnPicker(true)}
+                      className="px-3 py-2 bg-[#1f2233] hover:bg-[#2a3040] text-slate-300 rounded-lg text-sm transition-colors"
+                    >
+                      Browse CDN
+                    </button>
+                    {formData.logo && (
+                      <button
+                        type="button"
+                        onClick={() => setFormData(prev => ({ ...prev, logo: '' }))}
+                        className="px-3 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg text-sm transition-colors"
+                      >
+                        Remove
+                      </button>
+                    )}
+                    <input
+                      ref={logoInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleLogoUpload}
+                      className="hidden"
+                    />
+                  </div>
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-400 mb-1">Type</label>
@@ -347,7 +409,7 @@ const AdminPartnerDetailsPage: React.FC = () => {
             <div className="p-6 border-b border-[#1f2233]">
               <h2 className="text-lg font-medium text-white">Orders Using Code</h2>
             </div>
-            <table className="w-full">
+            <table className="w-full min-w-[720px]">
               <thead>
                 <tr className="border-b border-[#1f2233] bg-[#0a0c13]">
                   <th className="py-4 px-6 text-xs font-semibold text-slate-400 uppercase tracking-wider text-left">Order</th>
@@ -436,6 +498,16 @@ const AdminPartnerDetailsPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <CDNImagePicker
+        isOpen={showCdnPicker}
+        onClose={() => setShowCdnPicker(false)}
+        onSelect={(url) => {
+          setFormData(prev => ({ ...prev, logo: url }));
+          setShowCdnPicker(false);
+        }}
+        defaultPath="partners"
+      />
     </div>
   );
 };

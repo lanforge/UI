@@ -50,6 +50,8 @@ const Footer: React.FC = () => {
       links: [
         { name: 'Pre‑built PCs', path: '/products' },
         { name: 'Custom Configurator', path: '/configurator' },
+        { name: 'Accessories', path: '/accessories' },
+        { name: 'Merch', path: '/merch' },
       ].filter(link => isEnabled(link.path))
     },
     {

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBox, faCheck, faEnvelope, faTruckFast, faCheckCircle, faWrench, faChartBar, faHouse, faXmark, faCalendar, faHeart, faMobileScreen, faPhone } from '@fortawesome/free-solid-svg-icons';
+import { faBox, faCheck, faEnvelope, faTruckFast, faCheckCircle, faWrench, faChartBar, faHouse, faXmark, faCalendar, faHeart, faMobileScreen } from '@fortawesome/free-solid-svg-icons';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import '../App.css';
@@ -97,12 +97,17 @@ const OrderStatusPage: React.FC = () => {
   };
 
   const [orderItems, setOrderItems] = useState<any[]>([]);
+  const [subtotalCost, setSubtotalCost] = useState(0);
   const [shippingCost, setShippingCost] = useState(0);
   const [shippingInsurance, setShippingInsurance] = useState(0);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [taxCost, setTaxCost] = useState(0);
   const [discountAmount, setDiscountAmount] = useState(0);
+  const [donationCost, setDonationCost] = useState(0);
+  const [paymentSurcharge, setPaymentSurcharge] = useState(0);
   const [totalCost, setTotalCost] = useState(0);
+  const [paymentMethod, setPaymentMethod] = useState<string>('');
+  const [paymentStatus, setPaymentStatus] = useState<string>('');
+  const [orderDate, setOrderDate] = useState<string>('');
   const [activeDonationCauses, setActiveDonationCauses] = useState<any[]>([]);
 
   const fetchOrder = (id: string) => {
@@ -114,26 +119,52 @@ const OrderStatusPage: React.FC = () => {
       .then(data => {
         if (data.order) {
           setOrderId(data.order.orderNumber || data.order._id);
-          const mapped = data.order.items.map((item: any) => ({
-            id: item.product || Math.random(),
-            name: item.name || item.product?.name || 'Unknown Item',
-            price: item.price,
-            quantity: item.quantity
+          const mapped = data.order.items.map((item: any, idx: number) => ({
+            id: item._id || item.product || item.optimization || item.merch || item.accessory || item.pcPart || `item-${idx}`,
+            name: item.name || 'Item',
+            price: Number(item.price) || 0,
+            quantity: Number(item.quantity) || 1,
           }));
           setOrderItems(mapped);
-          setShippingCost(data.order.shipping || data.order.shippingCost || 0);
-          setShippingInsurance(data.order.shippingInsurance || 0);
-          setTaxCost(data.order.tax || 0);
-          setDiscountAmount(data.order.discount || 0);
-          setTotalCost(data.order.total || 0);
+          setSubtotalCost(Number(data.order.subtotal) || 0);
+          setShippingCost(Number(data.order.shipping) || 0);
+          setShippingInsurance(Number(data.order.shippingInsurance) || 0);
+          setTaxCost(Number(data.order.tax) || 0);
+          setDiscountAmount(Number(data.order.discount) || 0);
+          setDonationCost(Number(data.order.donationAmount) || 0);
+          setPaymentSurcharge(Number(data.order.paymentSurcharge) || 0);
+          setTotalCost(Number(data.order.total) || 0);
+          setPaymentMethod(data.order.paymentMethod || '');
+          setPaymentStatus(data.order.paymentStatus || '');
+          setOrderDate(data.order.createdAt || '');
+
+          // If this is a fresh, paid order tied to the current browser's cart
+          // session, drop the local cart pointer so the next visit to /cart
+          // starts clean. Belt-and-suspenders on top of the server-side clear.
+          try {
+            const localSessionId = localStorage.getItem('cartSessionId');
+            const orderSessionId = data.order.cartSessionId;
+            const isFreshPaid =
+              data.order.paymentStatus === 'paid' &&
+              data.order.createdAt &&
+              Date.now() - new Date(data.order.createdAt).getTime() < 30 * 60 * 1000;
+            if (isFreshPaid && localSessionId && orderSessionId && localSessionId === orderSessionId) {
+              localStorage.removeItem('cartSessionId');
+            }
+          } catch { /* localStorage might be unavailable */ }
+
+          // Pull customer info from the order's shipping address — the public
+          // endpoint doesn't populate `customer`, but the shipping address is
+          // unmasked for ObjectId lookups (the link sent after payment).
+          const ship = data.order.shippingAddress || {};
           setCustomerInfo({
-             firstName: data.order.customer?.firstName || 'Customer',
-             lastName: data.order.customer?.lastName || '',
-             email: data.order.customer?.email || data.order.email || '',
-             phone: data.order.customer?.phone || data.order.phone || '',
-             address: data.order.shippingAddress || {}
+             firstName: ship.firstName || data.order.customer?.firstName || '',
+             lastName: ship.lastName || data.order.customer?.lastName || '',
+             email: ship.email || data.order.customer?.email || data.order.guestEmail || '',
+             phone: ship.phone || data.order.customer?.phone || '',
+             address: ship,
           });
-          
+
           const backendStatus = data.order.status;
           const statusMap: Record<string, OrderStatus> = {
             'order-confirmed': 'Order Confirmed',
@@ -221,11 +252,22 @@ const OrderStatusPage: React.FC = () => {
   // To prevent TS unused-vars or anything if it complains, I am replacing the original fetch with fetchOrder inside useEffect.
   // Wait, I need to make sure I remove the old fetch exactly as it was. Let's fix the SEARCH block.
 
+  // Prefer the server-recorded total (it already includes any payment surcharge
+  // we baked in at confirm time). Only fall back to summing if the server didn't
+  // provide one — e.g., a very old order.
   const calculateTotal = () => {
     if (totalCost > 0) return totalCost;
-    // We don't have access to the raw data discount in calculateTotal if it wasn't saved in state. Let's make sure it's accurate.
-    // If totalCost is 0, we'll just sum what we know.
-    return orderItems.reduce((total, item) => total + (item.price * item.quantity), 0) + taxCost + shippingCost + shippingInsurance - discountAmount;
+    const itemsTotal = orderItems.reduce((t, item) => t + (item.price * item.quantity), 0);
+    return itemsTotal + taxCost + shippingCost + shippingInsurance + donationCost - discountAmount + paymentSurcharge;
+  };
+
+  const formatCurrency = (n: number) =>
+    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n || 0);
+
+  const paymentMethodLabel = (method: string) => {
+    if (method === 'paypal') return 'PayPal';
+    if (method === 'affirm') return 'Pay over time';
+    return method ? method.charAt(0).toUpperCase() + method.slice(1) : '—';
   };
 
   if (errorMsg) {
@@ -372,36 +414,73 @@ const OrderStatusPage: React.FC = () => {
             <div className="order-totals">
               <div className="total-row">
                 <span>Subtotal</span>
-                <span>${orderItems.reduce((total, item) => total + (item.price * item.quantity), 0).toFixed(2)}</span>
+                <span>{formatCurrency(subtotalCost || orderItems.reduce((t, i) => t + i.price * i.quantity, 0))}</span>
               </div>
               {shippingCost > 0 && (
                 <div className="total-row">
                   <span>Shipping</span>
-                  <span>${shippingCost.toFixed(2)}</span>
+                  <span>{formatCurrency(shippingCost)}</span>
                 </div>
               )}
               {shippingInsurance > 0 && (
                 <div className="total-row">
                   <span>Shipping Insurance</span>
-                  <span>${shippingInsurance.toFixed(2)}</span>
+                  <span>{formatCurrency(shippingInsurance)}</span>
                 </div>
               )}
               {taxCost > 0 && (
                 <div className="total-row">
                   <span>Tax</span>
-                  <span>${taxCost.toFixed(2)}</span>
+                  <span>{formatCurrency(taxCost)}</span>
+                </div>
+              )}
+              {donationCost > 0 && (
+                <div className="total-row">
+                  <span>Donation</span>
+                  <span>{formatCurrency(donationCost)}</span>
                 </div>
               )}
               {discountAmount > 0 && (
                 <div className="total-row" style={{ color: '#00ff9d' }}>
                   <span>Discount</span>
-                  <span>-${discountAmount.toFixed(2)}</span>
+                  <span>-{formatCurrency(discountAmount)}</span>
                 </div>
               )}
               <div className="total-row grand-total">
                 <span>Total</span>
-                <span>${calculateTotal().toFixed(2)}</span>
+                <span>{formatCurrency(calculateTotal())}</span>
               </div>
+              {paymentSurcharge > 0 && (
+                <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.45)', margin: '0.5rem 0 0', textAlign: 'right' }}>
+                  Total includes financing processing.
+                </p>
+              )}
+            </div>
+
+            <div className="payment-summary" style={{ marginTop: '1.5rem', padding: '1rem 1.25rem', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '10px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)' }}>
+                <span>Payment</span>
+                <span style={{ color: 'white' }}>
+                  {paymentMethodLabel(paymentMethod)}
+                  {paymentStatus && (
+                    <span style={{
+                      marginLeft: '0.5rem',
+                      fontSize: '0.7rem',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.08em',
+                      color: paymentStatus === 'paid' ? '#00ff9d' : paymentStatus === 'failed' ? '#ff4757' : '#ffc107'
+                    }}>
+                      {paymentStatus}
+                    </span>
+                  )}
+                </span>
+              </div>
+              {orderDate && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', marginTop: '0.4rem' }}>
+                  <span><FontAwesomeIcon icon={faCalendar} style={{ marginRight: '0.4rem' }} />Placed</span>
+                  <span style={{ color: 'white' }}>{new Date(orderDate).toLocaleString()}</span>
+                </div>
+              )}
             </div>
 
             {activeDonationCauses.length > 0 && (
@@ -426,15 +505,18 @@ const OrderStatusPage: React.FC = () => {
               <div className="shipping-details">
                 {customerInfo ? (
                   <>
-                    <p><strong>{customerInfo.firstName} {customerInfo.lastName}</strong></p>
-                    {customerInfo.address && (
-                      <>
-                        <p>{customerInfo.address.address}</p>
-                        <p>{customerInfo.address.city}, {customerInfo.address.state} {customerInfo.address.zip}</p>
-                        <p>{customerInfo.address.country || 'United States'}</p>
-                      </>
+                    {(customerInfo.firstName || customerInfo.lastName) && (
+                      <p><strong>{[customerInfo.firstName, customerInfo.lastName].filter(Boolean).join(' ')}</strong></p>
                     )}
-                    <p><FontAwesomeIcon icon={faEnvelope} /> {customerInfo.email}</p>
+                    {customerInfo.address?.address && <p>{customerInfo.address.address}</p>}
+                    {(customerInfo.address?.city || customerInfo.address?.state || customerInfo.address?.zip) && (
+                      <p>
+                        {[customerInfo.address.city, customerInfo.address.state].filter(Boolean).join(', ')}
+                        {customerInfo.address.zip ? ` ${customerInfo.address.zip}` : ''}
+                      </p>
+                    )}
+                    {customerInfo.address?.country && <p>{customerInfo.address.country}</p>}
+                    {customerInfo.email && <p><FontAwesomeIcon icon={faEnvelope} /> {customerInfo.email}</p>}
                     {customerInfo.phone && <p><FontAwesomeIcon icon={faMobileScreen} /> {customerInfo.phone}</p>}
                   </>
                 ) : (

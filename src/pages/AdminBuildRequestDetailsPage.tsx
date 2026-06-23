@@ -339,7 +339,7 @@ const AdminBuildRequestDetailsPage: React.FC = () => {
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
           <button 
             onClick={() => navigate('/admin/build-requests')}

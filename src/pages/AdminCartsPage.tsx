@@ -150,7 +150,7 @@ const AdminCartsPage: React.FC = () => {
   if (selectedCart) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
             <button 
               onClick={() => setSelectedCart(null)}
@@ -303,7 +303,7 @@ const AdminCartsPage: React.FC = () => {
             <div className="admin-card p-6">
               <h2 className="text-sm font-medium text-white mb-4">Summary</h2>
               <div className="space-y-2 mb-4 text-sm">
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <span className="text-slate-500">Subtotal</span>
                   <span className="text-slate-300">
                     {formatCurrency(editItems.reduce((total, item) => {
@@ -416,7 +416,7 @@ const AdminCartsPage: React.FC = () => {
       {/* Carts table */}
       <div className="admin-card overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full min-w-[720px] text-sm">
             <thead>
               <tr className="border-b border-[#1f2233] bg-[#07090e]">
                 <th className="py-4 px-6 text-xs font-semibold text-slate-400 uppercase tracking-wider text-left">Session/User</th>

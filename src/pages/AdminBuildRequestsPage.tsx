@@ -75,7 +75,7 @@ const AdminBuildRequestsPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-xl font-medium text-white">Build Requests</h1>
           <p className="text-slate-500 text-sm mt-1">Manage incoming custom build requests</p>
@@ -84,7 +84,7 @@ const AdminBuildRequestsPage: React.FC = () => {
 
       <div className="admin-card overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left border-collapse">
+          <table className="w-full min-w-[720px] text-sm text-left border-collapse">
             <thead>
               <tr className="bg-[#11141d] border-b border-[#1f2233]">
                 <th className="py-4 px-6 text-xs font-semibold text-slate-400 uppercase tracking-wider text-left">Date</th>

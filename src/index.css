@@ -178,6 +178,70 @@
     @apply inline-flex items-center px-2.5 py-0.5 rounded-md text-[10px] uppercase tracking-wider font-bold shadow-sm;
   }
 
+  /* ── Admin mobile utilities ─────────────────────────────────────────── */
+
+  /* Page header: title on top, actions wrap below on mobile, side-by-side on sm+ */
+  .admin-page-header {
+    @apply flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4 mb-4 sm:mb-6;
+  }
+
+  .admin-page-title {
+    @apply text-xl sm:text-2xl font-medium text-white;
+  }
+
+  .admin-page-subtitle {
+    @apply text-xs sm:text-sm text-slate-400 mt-0.5;
+  }
+
+  /* Action group: row of buttons that wraps on mobile */
+  .admin-actions {
+    @apply flex flex-wrap items-center gap-2;
+  }
+
+  /* Toolbar (filters/search/etc): wraps cleanly on mobile */
+  .admin-toolbar {
+    @apply flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3 mb-4;
+  }
+
+  /* Wrap a wide table so it scrolls horizontally on mobile instead of clipping */
+  .admin-table-wrap {
+    @apply -mx-4 sm:mx-0 overflow-x-auto;
+  }
+
+  .admin-table-wrap > table,
+  .admin-table-wrap > .admin-table-inner > table {
+    @apply min-w-[640px];
+  }
+
+  /* Responsive form grid — 1 col on mobile, 2 from sm, 3 from lg */
+  .admin-form-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4;
+  }
+
+  .admin-form-grid-2 {
+    @apply grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4;
+  }
+
+  /* Stat tiles row */
+  .admin-stat-grid {
+    @apply grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4;
+  }
+
+  /* Card row pattern used in many list pages */
+  .admin-card-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4;
+  }
+
+  /* Master/detail two-column → stack on mobile */
+  .admin-detail-grid {
+    @apply grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6;
+  }
+
+  /* Modal that goes full-screen on mobile and inset on desktop */
+  .admin-modal {
+    @apply fixed inset-0 sm:inset-4 lg:inset-auto lg:top-1/2 lg:left-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2 lg:max-w-xl lg:w-full bg-[#0a0c13] border-0 sm:border border-[#1f2233] sm:rounded-2xl overflow-y-auto;
+  }
+
   /* Section containers */
   .section {
     @apply py-20 md:py-32;

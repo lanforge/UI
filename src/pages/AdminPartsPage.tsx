@@ -221,7 +221,7 @@ const AdminPartsPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-xl font-medium text-white">PC Parts Management</h1>
           <p className="text-slate-500 text-sm mt-1">Manage individual components and hardware parts</p>
@@ -424,7 +424,7 @@ const AdminPartsPage: React.FC = () => {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full min-w-[720px] text-sm">
             <thead>
               <tr className="border-b border-[#1f2233] bg-[#07090e]">
                 <th className="py-4 px-6 text-xs font-semibold text-slate-400 uppercase tracking-wider text-left">Part Name</th>

@@ -109,7 +109,7 @@ const AdminInvoicesPage: React.FC = () => {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6">
         <h1 className="text-3xl font-medium text-white">Invoices</h1>
         <button onClick={() => setShowAddModal(true)} className="btn btn-primary btn-small">
           <FontAwesomeIcon icon={faPlus} className="mr-2" />
@@ -118,7 +118,7 @@ const AdminInvoicesPage: React.FC = () => {
       </div>
 
       <div className="admin-card overflow-hidden">
-        <table className="w-full text-left text-sm text-slate-400">
+        <table className="w-full min-w-[720px] text-left text-sm text-slate-400">
           <thead className="bg-[#11141d] border-b border-[#1f2233]">
             <tr>
               <th className="py-4 px-6 text-xs font-semibold text-slate-400 uppercase tracking-wider text-left">Invoice #</th>

@@ -8,6 +8,7 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import ScrollProgress from './components/ScrollProgress';
 import AnnouncementBar from './components/AnnouncementBar';
+import PromoPopup from './components/PromoPopup';
 import ScrollToTop from './components/ScrollToTop';
 import HomePage from './pages/HomePage';
 import ConfiguratorPage from './pages/ConfiguratorPage';
@@ -29,6 +30,7 @@ import DignitasPage from './pages/DignitasPage';
 import TradeifyPage from './pages/TradeifyPage';
 import PlaceholderPage from './pages/PlaceholderPage';
 import AccessoriesPage from './pages/AccessoriesPage';
+import MerchPage from './pages/MerchPage';
 import ShippingReturnsPage from './pages/ShippingReturnsPage';
 import ReviewsPage from './pages/ReviewsPage';
 import PressPage from './pages/PressPage';
@@ -39,6 +41,7 @@ import PartnersPage from './pages/PartnersPage';
 import AffiliateApplicationPage from './pages/AffiliateApplicationPage';
 import DiscountRedirectPage from './pages/DiscountRedirectPage';
 import TradeInPage from './pages/TradeInPage';
+import GiftCardPage from './pages/GiftCardPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 // Admin Pages
@@ -77,6 +80,15 @@ import AdminDonationCausesPage from './pages/AdminDonationCausesPage';
 import AdminApiLogsPage from './pages/AdminApiLogsPage';
 import AdminBundlesPage from './pages/AdminBundlesPage';
 import AdminAddBundlePage from './pages/AdminAddBundlePage';
+import AdminMerchPage from './pages/AdminMerchPage';
+import AdminAddMerchPage from './pages/AdminAddMerchPage';
+import AdminOptimizationsPage from './pages/AdminOptimizationsPage';
+import AdminAddOptimizationPage from './pages/AdminAddOptimizationPage';
+import AdminGiftcardsPage from './pages/AdminGiftcardsPage';
+import AdminDelistingsPage from './pages/AdminDelistingsPage';
+import AdminTradeInsPage from './pages/AdminTradeInsPage';
+import AdminTradeInDetailsPage from './pages/AdminTradeInDetailsPage';
+import AdminUsedPartsPage from './pages/AdminUsedPartsPage';
 
 
 export const PageStatusContext = React.createContext<string[]>([]);
@@ -265,7 +277,8 @@ const AppContent = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <PageStatusContext.Provider value={disabledPages}>
-      {!location.pathname.startsWith('/admin') && <AnnouncementBar />}
+      {!location.pathname.startsWith('/admin') && !location.pathname.startsWith('/checkout') && <AnnouncementBar />}
+      {!location.pathname.startsWith('/admin') && !location.pathname.startsWith('/checkout') && <PromoPopup />}
       {children}
     </PageStatusContext.Provider>
   );
@@ -371,6 +384,13 @@ function App() {
             <>
               <Header />
               <AccessoriesPage />
+              <Footer />
+            </>
+          } />
+          <Route path="/merch" element={
+            <>
+              <Header />
+              <MerchPage />
               <Footer />
             </>
           } />
@@ -488,6 +508,13 @@ function App() {
               <Footer />
             </>
           } />
+          <Route path="/giftcard" element={
+            <>
+              <Header />
+              <GiftCardPage />
+              <Footer />
+            </>
+          } />
           <Route path="/partner/:code" element={
             <>
               <Header />
@@ -513,11 +540,18 @@ function App() {
             <Route path="/admin/bundles" element={<AdminBundlesPage />} />
             <Route path="/admin/bundles/add" element={<AdminAddBundlePage />} />
             <Route path="/admin/bundles/edit/:id" element={<AdminAddBundlePage />} />
+            <Route path="/admin/merch" element={<AdminMerchPage />} />
+            <Route path="/admin/merch/add" element={<AdminAddMerchPage />} />
+            <Route path="/admin/merch/edit/:id" element={<AdminAddMerchPage />} />
+            <Route path="/admin/optimizations" element={<AdminOptimizationsPage />} />
+            <Route path="/admin/optimizations/add" element={<AdminAddOptimizationPage />} />
+            <Route path="/admin/optimizations/edit/:id" element={<AdminAddOptimizationPage />} />
             <Route path="/admin/inventory" element={<AdminInventoryPage />} />
             <Route path="/admin/customers" element={<AdminCustomersPage />} />
             <Route path="/admin/customers/add" element={<AdminAddCustomerPage />} />
             <Route path="/admin/customers/:id" element={<AdminCustomerDetailsPage />} />
             <Route path="/admin/promotions" element={<AdminPromotionsPage />} />
+            <Route path="/admin/giftcards" element={<AdminGiftcardsPage />} />
             <Route path="/admin/partners" element={<AdminPartnersPage />} />
             <Route path="/admin/partners/:id" element={<AdminPartnerDetailsPage />} />
             <Route path="/admin/carts" element={<AdminCartsPage />} />
@@ -534,6 +568,10 @@ function App() {
             <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
             <Route path="/admin/analytics/session/:id" element={<AdminSessionDetailsPage />} />
             <Route path="/admin/api-logs" element={<AdminApiLogsPage />} />
+            <Route path="/admin/delistings" element={<AdminDelistingsPage />} />
+            <Route path="/admin/trade-ins" element={<AdminTradeInsPage />} />
+            <Route path="/admin/trade-ins/:code" element={<AdminTradeInDetailsPage />} />
+            <Route path="/admin/used-parts" element={<AdminUsedPartsPage />} />
           </Route>
 
 

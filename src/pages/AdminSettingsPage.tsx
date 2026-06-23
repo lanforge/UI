@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSave, faSpinner, faCheck, faTimes, faCog, faFileAlt, faTools, faShippingFast } from '@fortawesome/free-solid-svg-icons';
+import { faSave, faSpinner, faCheck, faTimes, faCog, faFileAlt, faTools, faShippingFast, faGift } from '@fortawesome/free-solid-svg-icons';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
@@ -15,7 +15,7 @@ interface Page {
 }
 
 const AdminSettingsPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'general' | 'users' | 'pages' | 'maintenance' | 'tax' | 'announcements'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'users' | 'pages' | 'maintenance' | 'tax' | 'announcements' | 'promoPopup'>('general');
 
   // --- Settings State ---
   const [settings, setSettings] = useState<Record<string, any>>({
@@ -35,6 +35,8 @@ const AdminSettingsPage: React.FC = () => {
   const [pageStatuses, setPageStatuses] = useState<any[]>([]);
   const [maintenance, setMaintenance] = useState<any>({ enabled: false });
   const [announcementBar, setAnnouncementBar] = useState<any>({ announcements: [], rotationSpeed: 5, isVisible: true });
+  const [promoPopup, setPromoPopup] = useState<any>({ isEnabled: false, delaySeconds: 60, htmlContent: '', frequencyHours: 24 });
+  const [promoPreview, setPromoPreview] = useState(false);
   
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -60,10 +62,11 @@ const AdminSettingsPage: React.FC = () => {
   const fetchSettings = async () => {
     setIsLoading(true);
     try {
-      const [businessRes, pageRes, announcementRes] = await Promise.all([
+      const [businessRes, pageRes, announcementRes, promoPopupRes] = await Promise.all([
         api.get('/business'),
         api.get('/page-status'),
-        api.get('/announcement-bar')
+        api.get('/announcement-bar'),
+        api.get('/promo-popup')
       ]);
 
       if (businessRes.data.businessInfo) {
@@ -86,6 +89,10 @@ const AdminSettingsPage: React.FC = () => {
 
       if (announcementRes.data.announcementBar) {
         setAnnouncementBar(announcementRes.data.announcementBar);
+      }
+
+      if (promoPopupRes.data.promoPopup) {
+        setPromoPopup(promoPopupRes.data.promoPopup);
       }
     } catch (error) {
       console.error('Failed to fetch info', error);
@@ -152,6 +159,14 @@ const AdminSettingsPage: React.FC = () => {
 
       // Save announcement bar
       await api.put('/announcement-bar', announcementBar);
+
+      // Save promo popup
+      await api.put('/promo-popup', {
+        isEnabled: !!promoPopup.isEnabled,
+        delaySeconds: Number(promoPopup.delaySeconds) || 0,
+        htmlContent: promoPopup.htmlContent || '',
+        frequencyHours: Number(promoPopup.frequencyHours) || 0,
+      });
 
       await fetchSettings();
       
@@ -254,6 +269,14 @@ const AdminSettingsPage: React.FC = () => {
         <FontAwesomeIcon icon={faFileAlt} className="mr-2" /> Announcements
       </button>
       <button
+        onClick={() => setActiveTab('promoPopup')}
+        className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg whitespace-nowrap transition-colors ${
+          activeTab === 'promoPopup' ? 'bg-emerald-500/20 text-emerald-400' : 'text-slate-400 hover:text-white hover:bg-[#11141d]'
+        }`}
+      >
+        <FontAwesomeIcon icon={faGift} className="mr-2" /> Promo Popup
+      </button>
+      <button
         onClick={() => setActiveTab('maintenance')}
         className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg whitespace-nowrap transition-colors ${
           activeTab === 'maintenance' ? 'bg-emerald-500/20 text-emerald-400' : 'text-slate-400 hover:text-white hover:bg-[#11141d]'
@@ -274,7 +297,7 @@ const AdminSettingsPage: React.FC = () => {
 
   return (
     <div className="space-y-6 max-w-5xl h-full flex flex-col">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-xl font-medium text-white">Settings</h1>
           <p className="text-slate-500 text-sm mt-1">Manage global business details, pages content, and store modes</p>
@@ -775,6 +798,102 @@ const AdminSettingsPage: React.FC = () => {
                     ))
                   )}
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* PROMO POPUP TAB */}
+        {activeTab === 'promoPopup' && (
+          <div className="admin-card overflow-hidden">
+            <div className="p-6 border-b border-[#1f2233] flex justify-between items-center">
+              <h2 className="text-lg font-medium text-white flex items-center space-x-2">
+                <FontAwesomeIcon icon={faGift} className="text-pink-400" />
+                <span>Promo Popup</span>
+              </h2>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="sr-only peer"
+                  checked={!!promoPopup?.isEnabled}
+                  onChange={(e) => setPromoPopup((prev: any) => ({ ...prev, isEnabled: e.target.checked }))}
+                />
+                <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-pink-500"></div>
+                <span className="ml-3 text-sm font-medium text-slate-300">Enabled</span>
+              </label>
+            </div>
+            <div className="p-6 space-y-6">
+              <p className="text-sm text-slate-400">
+                Shows a promotional popup to visitors after they've been browsing for a configurable amount of time. Use it to surface a discount code, sale, or promotion to keep visitors engaged. Content accepts raw HTML.
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-slate-400 mb-2">Delay Before Showing (seconds)</label>
+                  <input
+                    type="number"
+                    min={0}
+                    className="admin-input w-full bg-[#0a0c13] border-[#1f2233] focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 rounded-xl"
+                    value={promoPopup?.delaySeconds ?? 60}
+                    onChange={(e) => setPromoPopup((prev: any) => ({ ...prev, delaySeconds: parseInt(e.target.value) || 0 }))}
+                  />
+                  <p className="text-xs text-slate-500 mt-2">Time the visitor spends on the site before the popup appears. ~60 is a good starting point.</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-400 mb-2">Show Again After (hours)</label>
+                  <input
+                    type="number"
+                    min={0}
+                    className="admin-input w-full bg-[#0a0c13] border-[#1f2233] focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 rounded-xl"
+                    value={promoPopup?.frequencyHours ?? 24}
+                    onChange={(e) => setPromoPopup((prev: any) => ({ ...prev, frequencyHours: parseInt(e.target.value) || 0 }))}
+                  />
+                  <p className="text-xs text-slate-500 mt-2">Once a visitor dismisses the popup, don't show it again for this many hours. 0 = always show.</p>
+                </div>
+              </div>
+
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <label className="block text-sm font-medium text-slate-400">
+                    HTML Content
+                  </label>
+                  <div className="flex bg-[#0a0c13] rounded-md p-1 border border-[#1f2233]">
+                    <button
+                      type="button"
+                      onClick={() => setPromoPreview(false)}
+                      className={`px-3 py-1 text-xs rounded-md transition-colors ${!promoPreview ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'}`}
+                    >
+                      Write
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPromoPreview(true)}
+                      className={`px-3 py-1 text-xs rounded-md transition-colors ${promoPreview ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'}`}
+                    >
+                      Preview
+                    </button>
+                  </div>
+                </div>
+
+                {promoPreview ? (
+                  <div className="w-full min-h-[260px] bg-[#0a0c13] border border-[#1f2233] rounded-md p-6 overflow-y-auto">
+                    {promoPopup?.htmlContent ? (
+                      <div dangerouslySetInnerHTML={{ __html: promoPopup.htmlContent }} />
+                    ) : (
+                      <p className="text-slate-500 italic">Nothing to preview</p>
+                    )}
+                  </div>
+                ) : (
+                  <textarea
+                    value={promoPopup?.htmlContent || ''}
+                    onChange={(e) => setPromoPopup((prev: any) => ({ ...prev, htmlContent: e.target.value }))}
+                    className="w-full min-h-[260px] bg-[#0a0c13] border border-[#1f2233] rounded-md px-4 py-3 text-white focus:outline-none focus:border-emerald-500 font-mono text-sm"
+                    placeholder={'<div style="text-align:center">\n  <h2 style="font-size:1.75rem;font-weight:800;color:#10b981">Save 10% Today</h2>\n  <p style="margin-top:.5rem;color:#cbd5e1">Use code <strong>WELCOME10</strong> at checkout.</p>\n</div>'}
+                  />
+                )}
+                <p className="text-xs text-slate-500 mt-2">
+                  Tip: keep the content compact — visitors see this as a modal overlay. A close button is always rendered automatically.
+                </p>
               </div>
             </div>
           </div>

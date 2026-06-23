@@ -151,7 +151,7 @@ const AdminDashboardPage: React.FC = () => {
             <button className="text-xs text-slate-400 hover:text-white transition-colors">View All</button>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[720px] text-sm">
               <thead>
                 <tr className="border-b border-[#1f2233] bg-[#11141d]">
                   <th className="py-4 px-6 text-xs font-semibold text-slate-400 uppercase tracking-wider text-left">Order</th>

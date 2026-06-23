@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -10,6 +10,7 @@ interface CartItem {
   name: string;
   description: string;
   price: number;
+  compareAtPrice?: number;
   quantity: number;
   image: string;
   category: string;
@@ -18,10 +19,113 @@ interface CartItem {
   notes?: string;
 }
 
+// Pull a usable ObjectId string out of a cart item ref, whether the server
+// returned the populated doc or just the raw id (or null, after a populate miss).
+const refId = (ref: any): string | null => {
+  if (!ref) return null;
+  if (typeof ref === 'string') return ref;
+  if (typeof ref === 'object' && ref._id) return String(ref._id);
+  return null;
+};
+
+// Map one server cart item -> our local CartItem. Type-aware so the
+// optimization/merch/accessory/pc-part branches each pull the right fields
+// (image vs images[0], etc.), and falls back to the locally-loaded
+// `optimizations` list when populate didn't bring back the doc.
+const mapCartItem = (item: any, index: number, optimizationsList: any[]): CartItem => {
+  const customBuild = item.customBuild;
+  if (customBuild && typeof customBuild === 'object') {
+    let buildImage = '/logo-2.png';
+    if (Array.isArray(customBuild.parts) && customBuild.parts.length > 0) {
+      const casePart = customBuild.parts.find((p: any) =>
+        p.partType === 'case' || p.partType === 'Case' || (p.part && (p.part.type === 'Case' || p.part.type === 'case'))
+      );
+      if (casePart?.part?.images?.[0]) buildImage = casePart.part.images[0];
+    }
+    return {
+      id: customBuild._id || index.toString(),
+      name: customBuild.name || 'Custom Build',
+      description: `Custom PC Build (${customBuild.parts?.length || 0} parts)`,
+      price: customBuild.total || 0,
+      quantity: item.quantity || 1,
+      image: buildImage,
+      category: 'Custom PC',
+      rawItem: { customBuild: customBuild._id || customBuild },
+      fee: customBuild.laborFee || 0,
+    };
+  }
+
+  // Optimization
+  const optimizationId = refId(item.optimization);
+  if (optimizationId) {
+    const populated = typeof item.optimization === 'object' && item.optimization?.name ? item.optimization : null;
+    const fallback = populated ? null : optimizationsList.find(o => String(o._id) === optimizationId);
+    const source = populated || fallback;
+    return {
+      id: optimizationId,
+      name: source?.name || 'Optimization',
+      description: source?.shortDescription || 'Optimization',
+      price: Number(source?.price) || 0,
+      compareAtPrice: source?.compareAtPrice,
+      quantity: item.quantity || 1,
+      image: source?.image || '/logo-2.png',
+      category: 'Optimization',
+      notes: item.notes,
+      rawItem: { optimization: optimizationId, notes: item.notes },
+    };
+  }
+
+  // Product / pcPart / accessory / merch — all reuse the populated doc.
+  const product = item.product || item.pcPart || item.accessory || item.merch;
+  let itemCategory = 'Component';
+  let fallbackName = 'Item';
+  if (item.product) {
+    itemCategory = product?.subcategory || product?.category || product?.type || 'PC';
+    fallbackName = 'Product';
+  } else if (item.accessory) {
+    itemCategory = product?.category || 'Accessory';
+    fallbackName = 'Accessory';
+  } else if (item.merch) {
+    itemCategory = 'Merch';
+    fallbackName = 'Merch';
+  } else if (item.pcPart) {
+    itemCategory = product?.type || 'Component';
+    fallbackName = 'Part';
+  }
+
+  const variantSuffix = [item.size, item.color].filter(Boolean).join(' / ');
+
+  return {
+    id: product?._id || index.toString(),
+    name: product?.name || fallbackName,
+    description: variantSuffix
+      ? `${itemCategory} — ${variantSuffix}`
+      : product?.brand ? `${product.brand} - ${product.type || itemCategory}` : itemCategory,
+    price: Number(item.price) || Number(product?.price) || 0,
+    compareAtPrice: product?.compareAtPrice,
+    quantity: item.quantity || 1,
+    image: product?.images?.[0] || '/logo-2.png',
+    category: itemCategory,
+    notes: item.notes,
+    rawItem: {
+      product: refId(item.product),
+      pcPart: refId(item.pcPart),
+      accessory: refId(item.accessory),
+      merch: refId(item.merch),
+      size: item.size,
+      color: item.color,
+      notes: item.notes,
+    },
+  };
+};
+
 const CartPage: React.FC = () => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [customDiscount, setCustomDiscount] = useState<number>(0);
   const [storeSettings, setStoreSettings] = useState<{ taxRate: number, taxEnabled: boolean }>({ taxRate: 8, taxEnabled: true });
+  const [optimizations, setOptimizations] = useState<any[]>([]);
+  // Keep a ref so SSE-driven fetchCart callbacks always see the latest list.
+  const optimizationsRef = useRef<any[]>([]);
 
   const fetchCart = () => {
     let sessionId = localStorage.getItem('cartSessionId');
@@ -29,70 +133,14 @@ const CartPage: React.FC = () => {
       sessionId = 'session_' + Math.random().toString(36).substring(2, 15);
       localStorage.setItem('cartSessionId', sessionId);
     }
-    
+
     fetch(`${process.env.REACT_APP_API_URL}/carts/${sessionId}`)
       .then(res => res.json())
       .then(data => {
         if (data.cart && data.cart.items) {
-          const mapped = data.cart.items.map((item: any, index: number) => {
-            const product = item.product || item.pcPart || item.accessory;
-            const customBuild = item.customBuild;
-            
-            if (customBuild) {
-              let buildImage = '/logo-2.png';
-              
-              if (customBuild.parts && customBuild.parts.length > 0) {
-                // Find the case part to use as the image
-                const casePart = customBuild.parts.find((p: any) => 
-                  p.partType === 'case' || p.partType === 'Case' || (p.part && (p.part.type === 'Case' || p.part.type === 'case'))
-                );
-                
-                if (casePart && casePart.part && casePart.part.images && casePart.part.images.length > 0) {
-                  buildImage = casePart.part.images[0];
-                }
-              }
-
-              // Deduplicate logic locally in case cart API returns raw parts vs merged. Wait, Cart handles it.
-              return {
-                id: customBuild._id || index.toString(),
-                name: customBuild.name || 'Custom Build',
-                description: `Custom PC Build (${customBuild.parts?.length || 0} parts)`,
-                price: customBuild.total || 0,
-                quantity: item.quantity || 1,
-                image: buildImage,
-                category: 'Custom PC',
-                rawItem: { customBuild: customBuild._id || customBuild },
-                fee: customBuild.laborFee || 0
-              };
-            }
-            
-            // Determine category
-            let itemCategory = 'Component';
-            if (item.product) {
-              itemCategory = product?.subcategory || product?.category || product?.type || 'PC';
-            } else if (item.accessory) {
-              itemCategory = product?.category || 'Accessory';
-            } else if (item.pcPart) {
-              itemCategory = product?.type || 'Component';
-            }
-
-            return {
-              id: product?._id || index.toString(),
-              name: product?.name || 'Item',
-              description: product?.brand ? `${product.brand} - ${product.type || itemCategory}` : itemCategory,
-              price: item.price || product?.price || 0,
-              quantity: item.quantity || 1,
-              image: product?.images?.[0] || '/logo-2.png',
-              category: itemCategory,
-              notes: item.notes,
-              rawItem: { 
-                product: item.product?._id || item.product,
-                pcPart: item.pcPart?._id || item.pcPart,
-                accessory: item.accessory?._id || item.accessory,
-                notes: item.notes,
-              }
-            };
-          });
+          const mapped = data.cart.items.map((item: any, index: number) =>
+            mapCartItem(item, index, optimizationsRef.current)
+          );
           setCartItems(mapped);
           setCustomDiscount(data.cart.customDiscountAmount || 0);
         }
@@ -113,6 +161,20 @@ const CartPage: React.FC = () => {
       })
       .catch(err => console.error(err));
   };
+
+  React.useEffect(() => {
+    fetch(`${process.env.REACT_APP_API_URL}/optimizations`)
+      .then(res => res.json())
+      .then(data => {
+        const list = data.optimizations || [];
+        optimizationsRef.current = list;
+        setOptimizations(list);
+        // If the cart already rendered before the optimization list arrived,
+        // re-fetch so any "Optimization · $0" rows fill in correctly.
+        fetchCart();
+      })
+      .catch(err => console.error('Failed to load optimizations', err));
+  }, []);
 
   React.useEffect(() => {
     fetchCart();
@@ -164,8 +226,8 @@ const CartPage: React.FC = () => {
     // Group identical items
     const mergedItemsMap = new Map<string, any>();
     items.forEach(i => {
-      const baseKey = i.rawItem.customBuild || i.rawItem.product || i.rawItem.pcPart || i.rawItem.accessory;
-      const key = `${baseKey}-${i.notes || ''}`;
+      const baseKey = i.rawItem.customBuild || i.rawItem.product || i.rawItem.pcPart || i.rawItem.accessory || i.rawItem.merch || i.rawItem.optimization;
+      const key = `${baseKey}-${i.rawItem.size || ''}-${i.rawItem.color || ''}-${i.notes || ''}`;
       if (mergedItemsMap.has(key)) {
         mergedItemsMap.get(key).quantity += i.quantity;
       } else {
@@ -323,11 +385,105 @@ const CartPage: React.FC = () => {
                       </div>
                     </div>
                     <div className="cart-item-price">
-                      <div className="price-amount">${(item.price * item.quantity).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-                      <div className="price-unit">${item.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} each</div>
+                      <div className="flex items-baseline justify-end gap-2">
+                        <div className="price-amount">${(item.price * item.quantity).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                        {item.compareAtPrice && item.compareAtPrice > item.price && (
+                          <div className="text-sm text-gray-500 line-through">
+                            ${(item.compareAtPrice * item.quantity).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </div>
+                        )}
+                      </div>
+                      <div className="price-unit">
+                        ${item.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} each
+                        {item.compareAtPrice && item.compareAtPrice > item.price && (
+                          <span className="text-gray-500 line-through ml-1">
+                            ${item.compareAtPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </motion.div>
                 ))}
+
+                {(() => {
+                  const hasPC = cartItems.some(ci => ci.category === 'Custom PC' || ci.category === 'PC' || ci.rawItem?.product || ci.rawItem?.customBuild);
+                  const cartOptimizationIds = new Set(
+                    cartItems
+                      .map(ci => ci.rawItem?.optimization)
+                      .filter(Boolean)
+                  );
+                  const available = optimizations.filter(o => !cartOptimizationIds.has(o._id));
+                  if (!hasPC || available.length === 0) return null;
+
+                  const addOptimization = (opt: any) => {
+                    const newItem: CartItem = {
+                      id: opt._id,
+                      name: opt.name,
+                      description: opt.shortDescription || 'Optimization',
+                      price: opt.price,
+                      quantity: 1,
+                      image: opt.image || '/logo-2.png',
+                      category: 'Optimization',
+                      rawItem: { optimization: opt._id },
+                    };
+                    const updated = [...cartItems, newItem];
+                    setCartItems(updated);
+                    syncCartWithApi(updated);
+                  };
+
+                  return (
+                    <motion.div
+                      className="cart-upsell mt-6 p-5 rounded-xl border border-emerald-500/20 bg-gradient-to-br from-emerald-500/[0.04] to-transparent"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: 0.15 + (cartItems.length * 0.05) }}
+                    >
+                      <div className="flex items-center justify-between mb-4">
+                        <div>
+                          <h3 className="text-base font-semibold text-white">Optimize your PC</h3>
+                          <p className="text-xs text-gray-500 mt-0.5">Bolt-on services to dial in your build</p>
+                        </div>
+                        <span className="text-[10px] uppercase tracking-wider text-emerald-400/70 font-semibold">Add-on</span>
+                      </div>
+
+                      <div className="divide-y divide-white/5">
+                        {available.map((opt, idx) => (
+                          <motion.div
+                            key={opt._id}
+                            initial={{ opacity: 0, x: -8 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.25, delay: idx * 0.04 }}
+                            className="flex items-center gap-4 py-3 first:pt-0 last:pb-0"
+                          >
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-white">{opt.name}</p>
+                              {opt.shortDescription && (
+                                <p className="text-xs text-gray-400 mt-0.5">{opt.shortDescription}</p>
+                              )}
+                            </div>
+                            <div className="flex items-baseline gap-2 whitespace-nowrap">
+                              <span className="text-sm text-emerald-400 font-semibold">
+                                +${opt.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              </span>
+                              {opt.compareAtPrice && opt.compareAtPrice > opt.price && (
+                                <span className="text-xs text-gray-500 line-through">
+                                  ${opt.compareAtPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                </span>
+                              )}
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => addOptimization(opt)}
+                              className="px-4 py-1.5 text-xs font-semibold rounded-md border border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10 hover:border-emerald-400 transition-colors whitespace-nowrap"
+                            >
+                              Add
+                            </button>
+                          </motion.div>
+                        ))}
+                      </div>
+                    </motion.div>
+                  );
+                })()}
               </>
             )}
           </motion.div>
